@@ -1,0 +1,24 @@
+{
+  "name": "apollo-server-statsd",
+  "version": "0.0.1",
+  "description": "Apollo GraphQL server statsd middleware",
+  "main": "dist/index.js",
+  "author": {
+    "name": "B. Deren",
+    "email": "deren.bogdan@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sgtram/apollo-server-statsd"
+  },
+  "keywords": [
+    "GraphQL",
+    "Apollo",
+    "Server",
+    "Statsd"
+  ],
+  "dependencies": {
+    "node-statsd": "^0.1.1"
+  }
+}
