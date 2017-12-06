@@ -1,14 +1,14 @@
-import { getNamedType } from 'graphql';
-import onFinished from 'on-finished';
-import {format} from 'util';
-import timer from './timer';
-import url from 'url';
-import appmetrics from 'appmetrics';
-import natsClient from './natsClient'; 
-import dummyClient from './dummyClient';
-import dummyMonitor from './dummyMonitor';
+const { getNamedType } = require('graphql');
+const onFinished = require('on-finished');
+const { format } = require('util');
+const timer = require('./timer');
+const url = require('url');
+const appmetrics = require('appmetrics');
+const natsClient = require('./natsClient'); 
+const dummyClient = require('./dummyClient');
+const dummyMonitor = require('./dummyMonitor');
 
-export default class {
+class Metrics {
   constructor(options = { dummy: true }) {
     this.options = options;
     this.client = options.dummy ? new dummyClient() : new natsClient();
@@ -209,3 +209,5 @@ export default class {
     };
   }
 }
+
+module.exports = Metrics

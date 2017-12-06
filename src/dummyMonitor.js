@@ -1,4 +1,4 @@
-export default class {
+class dummyMonitor {
   constructor(){}
 
   on(type) {
@@ -55,3 +55,5 @@ export default class {
     }
   }
 }
+
+module.exports = dummyMonitor

@@ -1,5 +1,5 @@
 const NATS = require('nats');
-export default class {
+class natsClient {
   constructor(){
     this.client = NATS.connect({ waitOnFirstConnect: true, reconnect: true })
   }
@@ -8,3 +8,5 @@ export default class {
     this.client.publish('metrics', payload);
   }
 }
+
+module.exports = natsClient

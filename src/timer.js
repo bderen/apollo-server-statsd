@@ -1,4 +1,4 @@
-export default class {
+class Timer {
   constructor() {
     this.hrtime = 0
     this.duration = 0
@@ -15,3 +15,5 @@ export default class {
     return this
   }
 }
+
+module.exports = Timer

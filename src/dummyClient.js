@@ -1,4 +1,4 @@
-export default class {
+class dummyClient {
   constructor(){}
 
   send(name, value, tags) {
@@ -6,3 +6,5 @@ export default class {
     console.log(name, value, tags);
   }
 }
+
+module.exports = dummyClient
