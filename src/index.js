@@ -1,3 +1,4 @@
+const os = require('os');
 const { getNamedType } = require('graphql');
 const onFinished = require('on-finished');
 const { format } = require('util');
@@ -76,6 +77,10 @@ class Metrics {
 
         if (context && context.operation) {
           tags.push(format('"operation": "%s"', context.operation))
+        }
+
+        if (context && context.hostname) {
+          tags.push(format('"hostname": "%s"', context.hostname))
         }
 
         tags.push(format('"resolver": "%s"', fieldInfo.name ? fieldInfo.name : 'undefined'))
@@ -173,12 +178,14 @@ class Metrics {
       const refererUrl = referer ? url.parse(referer) : null;
       const type = referer ? 'browser' : 'server';
       const page = refererUrl ? refererUrl.pathname : 'unknown';
+      const hostname = os.hostname();
 
       const t = new timer().start();
       const metricsContext = {
         type,
         page,
         operation,
+        hostname,
       };
       
       if (req.context) {
@@ -191,6 +198,7 @@ class Metrics {
 
       const tags = [];
 
+      if (metricsContext.hostname) tags.push(format('"hostname": "%s"', metricsContext.hostname))
       if (metricsContext.type) tags.push(format('"type": "%s"', metricsContext.type))
       if (metricsContext.page) tags.push(format('"page": "%s"', metricsContext.page))
       if (metricsContext.operation) tags.push(format('"operation": "%s"', metricsContext.operation))
