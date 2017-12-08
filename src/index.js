@@ -18,32 +18,33 @@ class Metrics {
 
   startMonitor() {
     this.monitor.on('cpu', (cpu) => {
-      this.send('cpu.process', cpu.process, this.options.tags);
-      this.send('cpu.system', cpu.system, this.options.tags);
+      this.send('cpu.process', cpu.process);
+      this.send('cpu.system', cpu.system);
     });
   
     this.monitor.on('memory', (memory) => {
-      this.send('memory.process.private', memory.private, this.options.tags);
-      this.send('memory.process.physical', memory.physical, this.options.tags);
-      this.send('memory.process.virtual', memory.virtual, this.options.tags);
-      this.send('memory.system.used', memory.physical_used, this.options.tags);
-      this.send('memory.system.total', memory.physical_total, this.options.tags);
+      this.send('memory.process.private', memory.private);
+      this.send('memory.process.physical', memory.physical);
+      this.send('memory.process.virtual', memory.virtual);
+      this.send('memory.system.used', memory.physical_used);
+      this.send('memory.system.total', memory.physical_total);
     });
   
     this.monitor.on('eventloop', (eventloop) => {
-      this.send('eventloop.latency.min', eventloop.latency.min, this.options.tags);
-      this.send('eventloop.latency.max', eventloop.latency.max, this.options.tags);
-      this.send('eventloop.latency.avg', eventloop.latency.avg, this.options.tags);
+      this.send('eventloop.latency.min', eventloop.latency.min);
+      this.send('eventloop.latency.max', eventloop.latency.max);
+      this.send('eventloop.latency.avg', eventloop.latency.avg);
     });
   
     this.monitor.on('gc', (gc) => {
-      this.send('gc.size', gc.size, this.options.tags);
-      this.send('gc.used', gc.used, this.options.tags);
-      this.send('gc.duration', gc.duration, this.options.tags);
+      this.send('gc.size', gc.size);
+      this.send('gc.used', gc.used);
+      this.send('gc.duration', gc.duration);
     });
   }
 
-  send(name, value = 1, tags) {
+  send(name, value = 1, tags = []) {
+    Object.assign(tags, this.options.tags)
     const msg = this.formatPayload(name, value, tags)
     this.client.send(msg);
   }
@@ -77,10 +78,6 @@ class Metrics {
 
         if (context && context.operation) {
           tags.push(format('"operation": "%s"', context.operation))
-        }
-
-        if (context && context.hostname) {
-          tags.push(format('"hostname": "%s"', context.hostname))
         }
 
         tags.push(format('"resolver": "%s"', fieldInfo.name ? fieldInfo.name : 'undefined'))
@@ -178,14 +175,12 @@ class Metrics {
       const refererUrl = referer ? url.parse(referer) : null;
       const type = referer ? 'browser' : 'server';
       const page = refererUrl ? refererUrl.pathname : 'unknown';
-      const hostname = os.hostname();
 
       const t = new timer().start();
       const metricsContext = {
         type,
         page,
         operation,
-        hostname,
       };
       
       if (req.context) {
@@ -198,11 +193,9 @@ class Metrics {
 
       const tags = [];
 
-      if (metricsContext.hostname) tags.push(format('"hostname": "%s"', metricsContext.hostname))
       if (metricsContext.type) tags.push(format('"type": "%s"', metricsContext.type))
       if (metricsContext.page) tags.push(format('"page": "%s"', metricsContext.page))
       if (metricsContext.operation) tags.push(format('"operation": "%s"', metricsContext.operation))
-      
 
       this.send('requests', 1, tags);
 
