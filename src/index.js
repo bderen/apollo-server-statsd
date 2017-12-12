@@ -44,8 +44,8 @@ class Metrics {
   }
 
   send(name, value = 1, tags = []) {
-    Object.assign(tags, this.options.tags)
-    const msg = this.formatPayload(name, value, tags)
+    const _tags = [...tags, ...this.options.tags]
+    const msg = this.formatPayload(name, value, _tags)
     this.client.send(msg);
   }
 
@@ -78,6 +78,10 @@ class Metrics {
 
         if (context && context.operation) {
           tags.push(format('"operation": "%s"', context.operation))
+        }
+
+        if (context && context.type) {
+          tags.push(format('"type": "%s"', context.type))
         }
 
         tags.push(format('"resolver": "%s"', fieldInfo.name ? fieldInfo.name : 'undefined'))
@@ -182,7 +186,7 @@ class Metrics {
         page,
         operation,
       };
-      
+
       if (req.context) {
         req.context.graphqlMetricsContext = metricsContext;
       } else {
