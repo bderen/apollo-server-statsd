@@ -9,43 +9,75 @@ const natsClient = require('./natsClient');
 const dummyClient = require('./dummyClient');
 const dummyMonitor = require('./dummyMonitor');
 
+let sendInterval = null;
+process.on('exit', function() {
+  clearInterval(sendInterval)
+})
+
 class Metrics {
   constructor(options = { dummy: true }) {
     this.options = options;
     this.client = options.dummy ? new dummyClient() : new natsClient();
     this.monitor = options.dummy ? new dummyMonitor() : appmetrics.monitor();
+    this.tags = this.options.tags || []
+    this.sendAgregatedDataInterval = this.options.sendAgregatedDataInterval || 5000 //send agregate data every X seconds
+    this.data = {}
   }
 
   startMonitor() {
-    this.monitor.on('cpu', (cpu) => {
-      this.send('cpu.process', cpu.process);
-      this.send('cpu.system', cpu.system);
-    });
+    if (this.options.monitorCPU) {
+      this.monitor.on('cpu', (cpu) => {
+        this.agregateData('cpu.process', cpu.process)
+        this.agregateData('cpu.system', cpu.system)
+      });
+    }
   
-    this.monitor.on('memory', (memory) => {
-      this.send('memory.process.private', memory.private);
-      this.send('memory.process.physical', memory.physical);
-      this.send('memory.process.virtual', memory.virtual);
-      this.send('memory.system.used', memory.physical_used);
-      this.send('memory.system.total', memory.physical_total);
-    });
+    if (this.options.monitorMEM) {
+      this.monitor.on('memory', (memory) => {
+        this.agregateData('memory.process.private', memory.private);
+        this.agregateData('memory.process.physical', memory.physical);
+        this.agregateData('memory.process.virtual', memory.virtual);
+        this.agregateData('memory.system.used', memory.physical_used);
+        this.agregateData('memory.system.total', memory.physical_total);
+      });
+    }
   
-    this.monitor.on('eventloop', (eventloop) => {
-      this.send('eventloop.latency.min', eventloop.latency.min);
-      this.send('eventloop.latency.max', eventloop.latency.max);
-      this.send('eventloop.latency.avg', eventloop.latency.avg);
-    });
-  
-    this.monitor.on('gc', (gc) => {
-      this.send('gc.size', gc.size);
-      this.send('gc.used', gc.used);
-      this.send('gc.duration', gc.duration);
-    });
+    if (this.options.monitorEVENTLOOP) {
+      this.monitor.on('eventloop', (eventloop) => {
+        this.agregateData('eventloop.latency.min', eventloop.latency.min);
+        this.agregateData('eventloop.latency.max', eventloop.latency.max);
+        this.agregateData('eventloop.latency.avg', eventloop.latency.avg);
+      });
+    }
+    
+    if (this.options.monitorGC) {
+      this.monitor.on('gc', (gc) => {
+        this.agregateData('gc.size', gc.size);
+        this.agregateData('gc.used', gc.used);
+        this.agregateData('gc.duration', gc.duration);
+      });
+    }
+
+    this.sendAgregatedData()
+  }
+
+  agregateData(name, data) {
+    this.data[name] = data;
+  }
+
+  sendAgregatedData() {
+    const me = this
+    sendInterval = setInterval(function(){
+      Object.keys(me.data).map(key => {
+        me.send(key, me.data[key])
+      })
+    }, this.sendAgregatedDataInterval)
   }
 
   send(name, value = 1, tags = []) {
-    const _tags = [...tags, ...this.options.tags]
+    const _tags = [...tags, ...this.tags]
     const msg = this.formatPayload(name, value, _tags)
+    
     this.client.send(msg);
   }
 
