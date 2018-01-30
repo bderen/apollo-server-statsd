@@ -1,5 +1,4 @@
 const os = require('os');
-const { getNamedType } = require('graphql');
 const onFinished = require('on-finished');
 const { format } = require('util');
 const timer = require('./timer');
@@ -180,6 +179,7 @@ class Metrics {
   }
 
   decorateSchema(schema) {
+    const { getNamedType } = require('graphql');
     const typeMap = schema.getTypeMap();
     Object.keys(typeMap).forEach(typeName => {
       const type = typeMap[typeName];
