@@ -18,7 +18,9 @@ class Metrics {
     this.options = options;
     this.client = options.dummy ? new dummyClient() : new natsClient();
     this.monitor = options.dummy ? new dummyMonitor() : appmetrics.monitor();
-    this.tags = this.options.tags || []
+    this.tags = this.options.tags || [];
+    this.schemaTags = this.options.schemaTags || false;
+    this.resolverTags = this.options.resolverTags || false;
     this.sendAgregatedDataInterval = this.options.sendAgregatedDataInterval || 5000 //send agregate data every X seconds
     this.data = {}
   }
@@ -101,21 +103,22 @@ class Metrics {
       // Send the resolve stat
       const statResolve = err => {
         let tags = [];
-
-        if (err) {
-          // In case Apollo Error is used, send the err.data.type
-          tags.push(format('"error": "%s"', err.data ? err.data.type : err.name))
+        if (this.resolverTags) {
+          if (err) {
+            // In case Apollo Error is used, send the err.data.type
+            tags.push(format('"error": "%s"', err.data ? err.data.type : err.name))
+          }
+  
+          if (context && context.operation) {
+            tags.push(format('"operation": "%s"', context.operation))
+          }
+  
+          if (context && context.type) {
+            tags.push(format('"type": "%s"', context.type))
+          }
+  
+          tags.push(format('"resolver": "%s"', fieldInfo.name ? fieldInfo.name : 'undefined'))
         }
-
-        if (context && context.operation) {
-          tags.push(format('"operation": "%s"', context.operation))
-        }
-
-        if (context && context.type) {
-          tags.push(format('"type": "%s"', context.type))
-        }
-
-        tags.push(format('"resolver": "%s"', fieldInfo.name ? fieldInfo.name : 'undefined'))
 
         this.send(
           'resolve_time',
@@ -199,40 +202,40 @@ class Metrics {
 
   graphqlStatsdMiddleware() {
     return (req, res, next) => {
-      let operation;
-      if (Array.isArray(req.body)) {
-        const names = req.body.filter(q => q.operationName).map(q => q.operationName)
-        operation = names && names.length ? names.join(',') : 'unknown'
-      } else {
-        operation = req.body.operationName ? req.body.operationName : 'unknown'
-      }
-
-      const referer = req.get('Referer');
-      const refererUrl = referer ? url.parse(referer) : null;
-      const type = referer ? 'browser' : 'server';
-      const page = refererUrl ? refererUrl.pathname : 'unknown';
-
-      const t = new timer().start();
-      const metricsContext = {
-        type,
-        page,
-        operation,
-      };
-
-      if (req.context) {
-        req.context.graphqlMetricsContext = metricsContext;
-      } else {
-        req.context = {
-          graphqlMetricsContext: metricsContext
-        }
-      }
-
       const tags = [];
+      if (this.schemaTags) {
+        let operation;
+        if (Array.isArray(req.body)) {
+          const names = req.body.filter(q => q.operationName).map(q => q.operationName)
+          operation = names && names.length ? names.join(',') : 'unknown'
+        } else {
+          operation = req.body.operationName ? req.body.operationName : 'unknown'
+        }
 
-      if (metricsContext.type) tags.push(format('"type": "%s"', metricsContext.type))
-      if (metricsContext.page) tags.push(format('"page": "%s"', metricsContext.page))
-      if (metricsContext.operation) tags.push(format('"operation": "%s"', metricsContext.operation))
+        const referer = req.get('Referer');
+        const refererUrl = referer ? url.parse(referer) : null;
+        const type = referer ? 'browser' : 'server';
+        const page = refererUrl ? refererUrl.pathname : 'unknown';
 
+        const t = new timer().start();
+        const metricsContext = {
+          type,
+          page,
+          operation,
+        };
+
+        if (req.context) {
+          req.context.graphqlMetricsContext = metricsContext;
+        } else {
+          req.context = {
+            graphqlMetricsContext: metricsContext
+          }
+        }
+
+        if (metricsContext.type) tags.push(format('"type": "%s"', metricsContext.type))
+        if (metricsContext.page) tags.push(format('"page": "%s"', metricsContext.page))
+        if (metricsContext.operation) tags.push(format('"operation": "%s"', metricsContext.operation))
+      }
       this.send('requests', 1, tags);
 
       onFinished(res, () => {
