@@ -96,10 +96,6 @@ class Metrics {
       const context = ctx.graphqlMetricsContext ?
         ctx.graphqlMetricsContext : undefined;
 
-      if (!context) {
-        console.warn('graphqlStatsd: Context is undefined!');
-      }
-
       // Send the resolve stat
       const statResolve = err => {
         let tags = [];
