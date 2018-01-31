@@ -203,6 +203,7 @@ class Metrics {
   graphqlStatsdMiddleware() {
     return (req, res, next) => {
       const tags = [];
+      const t = new timer().start();
       if (this.schemaTags) {
         let operation;
         if (Array.isArray(req.body)) {
@@ -217,7 +218,6 @@ class Metrics {
         const type = referer ? 'browser' : 'server';
         const page = refererUrl ? refererUrl.pathname : 'unknown';
 
-        const t = new timer().start();
         const metricsContext = {
           type,
           page,
