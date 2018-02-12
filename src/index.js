@@ -26,6 +26,10 @@ class Metrics {
   }
 
   startMonitor() {
+    if (!this.options.dummy) {
+      appmetrics.configure({'mqtt': 'off'})
+    }
+    
     if (this.options.monitorCPU) {
       this.monitor.on('cpu', (cpu) => {
         this.agregateData('cpu.process', cpu.process)
