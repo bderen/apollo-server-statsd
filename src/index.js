@@ -16,6 +16,9 @@ process.on('exit', function() {
 class Metrics {
   constructor(options = { dummy: true }) {
     this.options = options;
+    if (!options.dummy) {
+      appmetrics.configure({'mqtt': 'off'})
+    }
     this.client = options.dummy ? new dummyClient() : new natsClient();
     this.monitor = options.dummy ? new dummyMonitor() : appmetrics.monitor();
     this.tags = this.options.tags || [];
@@ -26,10 +29,6 @@ class Metrics {
   }
 
   startMonitor() {
-    if (!this.options.dummy) {
-      appmetrics.configure({'mqtt': 'off'})
-    }
-    
     if (this.options.monitorCPU) {
       this.monitor.on('cpu', (cpu) => {
         this.agregateData('cpu.process', cpu.process)
