@@ -96,7 +96,7 @@ class Metrics {
   decorateResolver(resolver, fieldInfo) {
     return (p, a, ctx, resolverInfo) => {
       const resolveTimer = new timer().start();
-      const context = ctx.graphqlMetricsContext ?
+      const context = ctx && ctx.graphqlMetricsContext ?
         ctx.graphqlMetricsContext : undefined;
 
       // Send the resolve stat
