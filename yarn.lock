@@ -2,12 +2,6 @@
 # yarn lockfile v1
 
 
-"@tmg/nats@^0.8.6":
-  version "0.8.6"
-  resolved "https://npmrepo.telegraaf.nl/@tmg%2fnats/-/nats-0.8.6.tgz#f7346a371a989936c84d2512694b5c118262ebfe"
-  dependencies:
-    nuid ">=0.6.8"
-
 appmetrics@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/appmetrics/-/appmetrics-3.1.3.tgz#2870b7ef5c60fc6f54ec1e41e50e92c16828ae06"
@@ -111,7 +105,13 @@ nan@2.x:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.8.0.tgz#ed715f3fe9de02b57a5e6252d90a96675e1f085a"
 
-nuid@>=0.6.8:
+nats@^0.8.10:
+  version "0.8.10"
+  resolved "https://registry.yarnpkg.com/nats/-/nats-0.8.10.tgz#3afb6d60e94385dc719f752ae9995495071d70a1"
+  dependencies:
+    nuid "^0.6.14"
+
+nuid@^0.6.14:
   version "0.6.14"
   resolved "https://registry.yarnpkg.com/nuid/-/nuid-0.6.14.tgz#a225c8b720e46c563ad8d13641368669f6c25b48"
 

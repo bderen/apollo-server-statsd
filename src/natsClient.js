@@ -1,5 +1,4 @@
-const NATS = require('@tmg/nats');
-NATS.MAX_CONTROL_LINE_SIZE = 1024
+const NATS = require('nats');
 
 class natsClient {
   constructor(){
