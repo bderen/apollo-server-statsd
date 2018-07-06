@@ -3,10 +3,9 @@ const onFinished = require('on-finished');
 const { format } = require('util');
 const timer = require('./timer');
 const url = require('url');
-const appmetrics = require('appmetrics');
 const natsClient = require('./natsClient'); 
 const dummyClient = require('./dummyClient');
-const dummyMonitor = require('./dummyMonitor');
+const appMonitor = require('./appMonitor');
 
 let sendInterval = null;
 process.on('exit', function() {
@@ -16,11 +15,8 @@ process.on('exit', function() {
 class Metrics {
   constructor(options = { dummy: true }) {
     this.options = options;
-    if (!options.dummy) {
-      appmetrics.configure({'mqtt': 'off'})
-    }
     this.client = options.dummy ? new dummyClient() : new natsClient();
-    this.monitor = options.dummy ? new dummyMonitor() : appmetrics.monitor();
+    this.monitor = new appMonitor();
     this.tags = this.options.tags || [];
     this.schemaTags = this.options.schemaTags || false;
     this.resolverTags = this.options.resolverTags || false;
@@ -35,30 +31,11 @@ class Metrics {
         this.agregateData('cpu.system', cpu.system)
       });
     }
-  
-    if (this.options.monitorMEM) {
-      this.monitor.on('memory', (memory) => {
-        this.agregateData('memory.process.private', memory.private);
-        this.agregateData('memory.process.physical', memory.physical);
-        this.agregateData('memory.process.virtual', memory.virtual);
-        this.agregateData('memory.system.used', memory.physical_used);
-        this.agregateData('memory.system.total', memory.physical_total);
-      });
-    }
-  
-    if (this.options.monitorEVENTLOOP) {
-      this.monitor.on('eventloop', (eventloop) => {
-        this.agregateData('eventloop.latency.min', eventloop.latency.min);
-        this.agregateData('eventloop.latency.max', eventloop.latency.max);
-        this.agregateData('eventloop.latency.avg', eventloop.latency.avg);
-      });
-    }
     
     if (this.options.monitorGC) {
       this.monitor.on('gc', (gc) => {
         this.agregateData('gc.size', gc.size);
         this.agregateData('gc.used', gc.used);
-        this.agregateData('gc.duration', gc.duration);
       });
     }
 
@@ -70,10 +47,10 @@ class Metrics {
   }
 
   sendAgregatedData() {
-    const me = this
+    const _this = this
     sendInterval = setInterval(function(){
-      Object.keys(me.data).map(key => {
-        me.send(key, me.data[key])
+      Object.keys(_this.data).map(key => {
+        _this.send(key, _this.data[key])
       })
     }, this.sendAgregatedDataInterval)
   }
