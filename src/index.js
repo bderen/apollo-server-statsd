@@ -5,6 +5,7 @@ const timer = require('./timer');
 const url = require('url');
 const appmetrics = require('appmetrics');
 const natsClient = require('./natsClient'); 
+const prometheusClient = require('./prometheusClient'); 
 const dummyClient = require('./dummyClient');
 const dummyMonitor = require('./dummyMonitor');
 
@@ -19,7 +20,11 @@ class Metrics {
     if (!options.dummy) {
       appmetrics.configure({'mqtt': 'off'})
     }
-    this.client = options.dummy ? new dummyClient() : new natsClient();
+    if (options.usePrometheus) {
+      this.client = options.dummy ? new dummyClient() : new prometheusClient(options);
+    } else {
+      this.client = options.dummy ? new dummyClient() : new natsClient();
+    }
     this.monitor = options.dummy ? new dummyMonitor() : appmetrics.monitor();
     this.tags = this.options.tags || [];
     this.schemaTags = this.options.schemaTags || false;
@@ -80,8 +85,10 @@ class Metrics {
 
   send(name, value = 1, tags = []) {
     const _tags = [...tags, ...this.tags]
+    if (this.options.usePrometheus) {
+      this.client.sendRaw(name, value, _tags.join(','))
+    }
     const msg = this.formatPayload(name, value, _tags)
-    
     this.client.send(msg);
   }
 
