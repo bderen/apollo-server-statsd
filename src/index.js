@@ -29,6 +29,7 @@ class Metrics {
       this.monitor.on('cpu', (cpu) => {
         this.agregateData('cpu.process', cpu.process)
         this.agregateData('cpu.system', cpu.system)
+        this.agregateData('cpu.percent', cpu.percent)
       });
     }
     
