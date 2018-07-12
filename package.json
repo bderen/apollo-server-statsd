@@ -1,6 +1,6 @@
 {
   "name": "apollo-server-statsd",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Apollo GraphQL server statsd middleware",
   "main": "src/index.js",
   "author": {
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "hash-sum": "^1.0.2",
-    "nats": "^0.8.10",
+    "nats": "^1.0.0",
     "on-finished": "^2.3.0"
   }
 }
