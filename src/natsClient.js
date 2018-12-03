@@ -1,12 +1,13 @@
 const NATS = require('nats');
 
 class natsClient {
-  constructor(){
+  constructor(options){
+    this.channel = options.nats.channel || 'metrics';
     this.client = NATS.connect({ maxReconnectAttempts: -1, reconnectTimeWait: 250, waitOnFirstConnect: true, reconnect: true })
   }
 
   send(payload) {
-    this.client.publish('metrics', payload);
+    this.client.publish(this.channel, payload);
   }
 }
 

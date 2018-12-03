@@ -19,11 +19,11 @@
     "Statsd"
   ],
   "peerDependencies": {
-    "graphql": "^0.11.7 || ^0.12.3"
+    "graphql": "^0.13.2"
   },
   "dependencies": {
     "hash-sum": "^1.0.2",
-    "nats": "^1.0.0",
+    "nats": "^1.0.1",
     "on-finished": "^2.3.0"
   }
 }

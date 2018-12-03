@@ -15,7 +15,7 @@ process.on('exit', function() {
 class Metrics {
   constructor(options = { dummy: true }) {
     this.options = options;
-    this.client = options.dummy ? new dummyClient() : new natsClient();
+    this.client = options.dummy ? new dummyClient(options) : new natsClient(options);
     this.monitor = new appMonitor();
     this.tags = this.options.tags || [];
     this.schemaTags = this.options.schemaTags || false;

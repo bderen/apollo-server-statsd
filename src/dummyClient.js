@@ -1,5 +1,7 @@
 class dummyClient {
-  constructor(){}
+  constructor(options){
+    this.options = options;
+  }
 
   send(name, value, tags) {
     console.info('dummyCLient:send');
